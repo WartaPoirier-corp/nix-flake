@@ -1,0 +1,102 @@
+{
+  "nodes": {
+    "fenix": {
+      "inputs": {
+        "naersk": "naersk",
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "rust-analyzer-src": "rust-analyzer-src"
+      },
+      "locked": {
+        "lastModified": 1610679947,
+        "narHash": "sha256-s3DZzlZuTEg3nymFy8xPWiNPGFYY/EkRgs4KfrWF7YE=",
+        "owner": "figsoda",
+        "repo": "fenix",
+        "rev": "f2ede107c26645dc1e96d3c0d9fdeefbdcc9eadb",
+        "type": "github"
+      },
+      "original": {
+        "owner": "figsoda",
+        "repo": "fenix",
+        "rev": "f2ede107c26645dc1e96d3c0d9fdeefbdcc9eadb",
+        "type": "github"
+      }
+    },
+    "flake-utils": {
+      "locked": {
+        "lastModified": 1610051610,
+        "narHash": "sha256-U9rPz/usA1/Aohhk7Cmc2gBrEEKRzcW4nwPWMPwja4Y=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "3982c9903e93927c2164caa727cd3f6a0e6d14cc",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "naersk": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1610392286,
+        "narHash": "sha256-3wFl5y+4YZO4SgRYK8WE7JIS3p0sxbgrGaQ6RMw+d98=",
+        "owner": "nmattia",
+        "repo": "naersk",
+        "rev": "d7bfbad3304fd768c0f93a4c3b50976275e6d4be",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nmattia",
+        "repo": "naersk",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1611917593,
+        "narHash": "sha256-cNixRxLB3Nnvt2IW5CL0mif+0iBGqOiSImKVbdAgx2g=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "dd9f73e7d34486b09b966738ace161e621a0480b",
+        "type": "github"
+      },
+      "original": {
+        "id": "nixpkgs",
+        "type": "indirect"
+      }
+    },
+    "root": {
+      "inputs": {
+        "fenix": "fenix",
+        "flake-utils": "flake-utils",
+        "nixpkgs": "nixpkgs"
+      }
+    },
+    "rust-analyzer-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1610580154,
+        "narHash": "sha256-ImdGZlsRGv6vz18gYrjrY1w4/ljISrnDDj3wZ7UBQs8=",
+        "owner": "rust-analyzer",
+        "repo": "rust-analyzer",
+        "rev": "6835f2e37c8331ef54d4839a31df195d7dbbeee8",
+        "type": "github"
+      },
+      "original": {
+        "owner": "rust-analyzer",
+        "ref": "nightly",
+        "repo": "rust-analyzer",
+        "type": "github"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
