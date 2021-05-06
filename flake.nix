@@ -235,6 +235,9 @@
                 description = "WartaPuretai";
                 wantedBy = [ "multi-user.target" ];
                 after = [ "network.target" ];
+                environment = {
+                  ROCKET_PORT = "8088";
+                };
                 serviceConfig = {
                   WorkingDirectory = "${self.packages.${pkgs.system}.wartapuretai}/";
                   ExecStart = "${self.packages.${pkgs.system}.wartapuretai}/bin/warta-quiz";
