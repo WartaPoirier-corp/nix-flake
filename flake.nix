@@ -63,14 +63,14 @@
           wartapuretai = rust.buildRustPackage {
             crateName = "warta-quiz";
             pname = "wartapuretai";
-            version = "0.1.0";
+            version = "0.1.1";
             src = pkgs.fetchFromGitHub {
               owner = "WartaPoirier-corp";
               repo = "Wartapuretai";
-              rev = "7325ba98589a4d40d4fabd4aed17a458044d1be5";
-              sha256 = "sha256-57kb0Mwsdp+xrLbPI26vTqUS/2NDpTyI/kZy5o/2q4k=";
+              rev = "3b630e792793b2116b9d1bc371cbfcce0e6bfc27";
+              sha256 = "sha256-LvBvTHezK7BHkyg479Ry+uZ+4PteTP1aAt7KFELCeb0=";
             };
-            cargoSha256 = "sha256-7tqO3JYqAaP4IymUHgZzgAy4YEnDOTPy8/2oAdpVdTk=";
+            cargoSha256 = "sha256-4mfkm/HJPFi0flyfSf9qfyhqStVjaNGUBOp20piGeYA=";
             postInstall = ''
               cp -r $src/static/ $out/
               cp -r $src/templates/ $out/
