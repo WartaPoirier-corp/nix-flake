@@ -74,6 +74,7 @@
             postInstall = ''
               cp -r $src/static/ $out/
               cp -r $src/templates/ $out/
+              cp questions.json $out/
             '';
             meta = with pkgs.lib; {
               description = "Purity test";
