@@ -198,7 +198,7 @@
                 Group = "wartid";
               };
             };
-            systemd.services.wartid-server-discord-bot = mkIf cfg.enableDiscordBot {
+            config.systemd.services.wartid-server-discord-bot = mkIf cfg.enableDiscordBot {
               description = "WartID server: Discord bot";
               wantedBy = [ "multi-user.target" ];
               after = [ "network.target" ];
@@ -216,7 +216,7 @@
               };
             };
 
-            services.nginx.virtualHosts."${cfg.domain}" = mkIf cfg.enableNginx {
+            config.services.nginx.virtualHosts."${cfg.domain}" = mkIf cfg.enableNginx {
               enableACME = true;
               forceSSL = true;
               root = "${self.packages.${pkgs.system}.wartid-server}";
@@ -244,7 +244,7 @@
               };
             };
 
-            services.nginx.virtualHosts."${puretaiCfg.domain}" = mkIf puretaiCfg.enableNginx {
+            config.services.nginx.virtualHosts."${puretaiCfg.domain}" = mkIf puretaiCfg.enableNginx {
               enableACME = true;
               forceSSL = true;
               root = "${self.packages.${pkgs.system}.wartapuretai}";
