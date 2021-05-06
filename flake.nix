@@ -174,91 +174,89 @@
               };
             };
 
-            config = (mkIf cfg.enable {
-              systemd.tmpfiles.rules = [
-                "d /tmp/wartid/ - wartid wartid - -"
-              ];
-              users.users.wartid = {
-                group = "wartid";
+            config.systemd.tmpfiles.rules = mkIf cfg.enable [
+              "d /tmp/wartid/ - wartid wartid - -"
+            ];
+            config.users.users.wartid = mkIf cfg.enable {
+              group = "wartid";
+            };
+            config.users.groups.wartid = mkIf cfg.enable {};
+            config.systemd.services.wartid-server = mkIf cfg.enable {
+              description = "WartID server";
+              wantedBy = [ "multi-user.target" ];
+              after = [ "network.target" ];
+              environment = {
+                DISCORD_KEY_FILE = "/tmp/wartid/discord_jwt.key";
+                DATABASE_URL = "postgres://${cfg.db.user}:${cfg.db.password}@localhost/${cfg.db.name}";
+                HTTP_BASE_URL = "https://${cfg.domain}";
               };
-              users.groups.wartid = {};
-              systemd.services.wartid-server = {
-                description = "WartID server";
-                wantedBy = [ "multi-user.target" ];
-                after = [ "network.target" ];
-                environment = {
-                  DISCORD_KEY_FILE = "/tmp/wartid/discord_jwt.key";
-                  DATABASE_URL = "postgres://${cfg.db.user}:${cfg.db.password}@localhost/${cfg.db.name}";
-                  HTTP_BASE_URL = "https://${cfg.domain}";
-                };
-                serviceConfig = {
-                  PreStart = "${pkgs.diesel-cli}/bin/diesel migration run --migration-dir ${self.packages.${pkgs.system}.wartid-server}/migrations";
-                  ExecStart = "${self.packages.${pkgs.system}.wartid-server}/bin/wartid-server";
-                  Type = "simple";
-                  User = "wartid";
-                  Group = "wartid";
-                };
+              serviceConfig = {
+                PreStart = "${pkgs.diesel-cli}/bin/diesel migration run --migration-dir ${self.packages.${pkgs.system}.wartid-server}/migrations";
+                ExecStart = "${self.packages.${pkgs.system}.wartid-server}/bin/wartid-server";
+                Type = "simple";
+                User = "wartid";
+                Group = "wartid";
               };
-              systemd.services.wartid-server-discord-bot = mkIf cfg.enableDiscordBot {
-                description = "WartID server: Discord bot";
-                wantedBy = [ "multi-user.target" ];
-                after = [ "network.target" ];
-                environment = {
-                  DISCORD_KEY_FILE = "/tmp/wartid/discord_jwt.key";
-                  DISCORD_TOKEN = cfg.discordToken;
-                  DISCORD_ALLOWED_GUILDS = concatStringsSep "," (builtins.map builtins.toString cfg.discordAllowedGuilds);
-                  HTTP_BASE_URL = "https://${cfg.domain}";
-                };
-                serviceConfig = {
-                  ExecStart = "/${self.packages.${pkgs.system}.wartid-server-discord-bot}/bin/wartid-server-discord-bot";
-                  Type = "simple";
-                  User = "wartid";
-                  Group = "wartid";
-                };
+            };
+            systemd.services.wartid-server-discord-bot = mkIf cfg.enableDiscordBot {
+              description = "WartID server: Discord bot";
+              wantedBy = [ "multi-user.target" ];
+              after = [ "network.target" ];
+              environment = {
+                DISCORD_KEY_FILE = "/tmp/wartid/discord_jwt.key";
+                DISCORD_TOKEN = cfg.discordToken;
+                DISCORD_ALLOWED_GUILDS = concatStringsSep "," (builtins.map builtins.toString cfg.discordAllowedGuilds);
+                HTTP_BASE_URL = "https://${cfg.domain}";
               };
+              serviceConfig = {
+                ExecStart = "/${self.packages.${pkgs.system}.wartid-server-discord-bot}/bin/wartid-server-discord-bot";
+                Type = "simple";
+                User = "wartid";
+                Group = "wartid";
+              };
+            };
 
-              services.nginx.virtualHosts."${cfg.domain}" = mkIf cfg.enableNginx {
-                enableACME = true;
-                forceSSL = true;
-                root = "${self.packages.${pkgs.system}.wartid-server}";
-                locations = {
-                  "/static/" = {
-                    alias = "${self.packages.${pkgs.system}.wartid-server}/static/";
-                  };
-                  "/" = {
-                    proxyPass = "http://localhost:8000";
-                  };
+            services.nginx.virtualHosts."${cfg.domain}" = mkIf cfg.enableNginx {
+              enableACME = true;
+              forceSSL = true;
+              root = "${self.packages.${pkgs.system}.wartid-server}";
+              locations = {
+                "/static/" = {
+                  alias = "${self.packages.${pkgs.system}.wartid-server}/static/";
+                };
+                "/" = {
+                  proxyPass = "http://localhost:8000";
                 };
               };
-            }) // (mkIf puretaiCfg.enable {
-              systemd.services.wartapuretai = {
-                description = "WartaPuretai";
-                wantedBy = [ "multi-user.target" ];
-                after = [ "network.target" ];
-                environment = {
-                  ROCKET_PORT = "8088";
-                };
-                serviceConfig = {
-                  WorkingDirectory = "${self.packages.${pkgs.system}.wartapuretai}/";
-                  ExecStart = "${self.packages.${pkgs.system}.wartapuretai}/bin/warta-quiz";
-                  Type = "simple";
-                };
-              };
+            };
 
-              services.nginx.virtualHosts."${puretaiCfg.domain}" = mkIf puretaiCfg.enableNginx {
-                enableACME = true;
-                forceSSL = true;
-                root = "${self.packages.${pkgs.system}.wartapuretai}";
-                locations = {
-                  "/static/" = {
-                    alias = "${self.packages.${pkgs.system}.wartapuretai}/static/";
-                  };
-                  "/" = {
-                    proxyPass = "http://localhost:8088";
-                  };
+            config.systemd.services.wartapuretai = mkIf puretaiCfg.enable {
+              description = "WartaPuretai";
+              wantedBy = [ "multi-user.target" ];
+              after = [ "network.target" ];
+              environment = {
+                ROCKET_PORT = "8088";
+              };
+              serviceConfig = {
+                WorkingDirectory = "${self.packages.${pkgs.system}.wartapuretai}/";
+                ExecStart = "${self.packages.${pkgs.system}.wartapuretai}/bin/warta-quiz";
+                Type = "simple";
+              };
+            };
+
+            services.nginx.virtualHosts."${puretaiCfg.domain}" = mkIf puretaiCfg.enableNginx {
+              enableACME = true;
+              forceSSL = true;
+              root = "${self.packages.${pkgs.system}.wartapuretai}";
+              locations = {
+                "/static/" = {
+                  alias = "${self.packages.${pkgs.system}.wartapuretai}/static/";
+                };
+                "/" = {
+                  proxyPass = "http://localhost:8088";
                 };
               };
-            });
+            };
           };
       };
 }
