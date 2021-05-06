@@ -58,6 +58,29 @@
               license = licenses.agpl3;
             };
           };
+
+          # WartaPuretai
+          wartapuretai = rust.buildRustPackage {
+            crateName = "warta-quiz";
+            pname = "wartapuretai";
+            version = "0.1.0";
+            src = pkgs.fetchFromGitHub {
+              owner = "WartaPoirier-corp";
+              repo = "Wartapuretai";
+              rev = "7325ba98589a4d40d4fabd4aed17a458044d1be5";
+              sha256 = "sha256-57kb0Mwsdp+xrLbPI26vTqUS/2NDpTyI/kZy5o/2q4k=";
+            };
+            cargoSha256 = "sha256-7tqO3JYqAaP4IymUHgZzgAy4YEnDOTPy8/2oAdpVdTk=";
+            postInstall = ''
+              cp -r $src/static/ $out/
+              cp -r $src/templates/ $out/
+            '';
+            meta = with pkgs.lib; {
+              description = "Purity test";
+              homepage = "https://github.com/WartaPoirier-corp/WartaPuretai/";
+              license = licenses.agpl3;
+            };
+          };
         };
 
         defaultPackage = self.packages.${system}.wartid-server;
@@ -88,9 +111,22 @@
         nixosModule = { config, pkgs, lib, ... }:
           let
             cfg = config.services.wartid;
+            puretaiCfg = config.services.wartapuretai;
           in
           with lib;
           {
+            options.services.wartapuretai = {
+              enable = mkEnableOption "WartaPuretai";
+              domain = mkOption {
+                type = types.str;
+                description = "The domain name on which the app is hosted";
+              };
+              enableNginx = mkOption {
+                type = types.bool;
+                default = true;
+                description = "Wheter or not to add a nginx config for WartaPuretai";
+              };
+            };
             options.services.wartid = {
               enable = mkEnableOption "WartID server";
               enableDiscordBot = mkEnableOption "WartID Discord bot";
@@ -137,7 +173,7 @@
               };
             };
 
-            config = mkIf cfg.enable {
+            config = (mkIf cfg.enable {
               systemd.tmpfiles.rules = [
                 "d /tmp/wartid/ - wartid wartid - -"
               ];
@@ -193,7 +229,31 @@
                   };
                 };
               };
-            };
+            }) // (mkIf puretaiCfg.enable {
+              systemd.services.wartapuretai = {
+                description = "WartaPuretai";
+                wantedBy = [ "multi-user.target" ];
+                after = [ "network.target" ];
+                serviceConfig = {
+                  ExecStart = "/${self.packages.${pkgs.system}.wartapuretai}/bin/warta-quiz";
+                  Type = "simple";
+                };
+              };
+
+              services.nginx.virtualHosts."${puretaiCfg.domain}" = mkIf puretaiCfg.enableNginx {
+                enableACME = true;
+                forceSSL = true;
+                root = "${self.packages.${pkgs.system}.wartapuretai}";
+                locations = {
+                  "/static/" = {
+                    alias = "${self.packages.${pkgs.system}.wartapuretai}/static/";
+                  };
+                  "/" = {
+                    proxyPass = "http://localhost:8088";
+                  };
+                };
+              };
+            });
           };
       };
 }
