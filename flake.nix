@@ -236,7 +236,8 @@
                 wantedBy = [ "multi-user.target" ];
                 after = [ "network.target" ];
                 serviceConfig = {
-                  ExecStart = "/${self.packages.${pkgs.system}.wartapuretai}/bin/warta-quiz";
+                  WorkingDirectory = "${self.packages.${pkgs.system}.wartapuretai}/";
+                  ExecStart = "${self.packages.${pkgs.system}.wartapuretai}/bin/warta-quiz";
                   Type = "simple";
                 };
               };
