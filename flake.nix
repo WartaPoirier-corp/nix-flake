@@ -91,8 +91,8 @@
             src = pkgs.fetchFromGitHub {
               owner = "WartaPoirier-corp";
               repo = "warta-juge-tes-potes";
-              rev = "94ce31f7493592459b5b05e3b6f1a759cf120771";
-              sha256 = "sha256-V3T2c+kuEyXILlAxLZ9da7TH+2UujOtYBs1CsoZcWng=";
+              rev = "5d3a7f4d4132dff90a6b18a99ed528a65cdd1b1c";
+              sha256 = "sha256-wynxYQ70MEdM0FJsOo7Hz/qvRGxJ3h0yovVUaMCmfP0=";
             };
             cargoSha256 = "sha256-AAssvQd1OMiAnF7RsqMG2GKKHQ0SfXYgvdHU/yRFTms=";
             postInstall = ''
@@ -319,6 +319,10 @@
                 "/" = {
                   proxyPass = "http://localhost:8089";
                 };
+                "/ws" = {
+                  proxyPass = "http://localhost:8008";
+                  proxyWebsockets = true;
+                }
               };
             };
           };
