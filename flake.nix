@@ -82,6 +82,29 @@
               license = licenses.agpl3;
             };
           };
+          
+          # WartaJugeTesPotes
+          wjtp = rust.buildRustPackage {
+            crateName = "warta-juge-tes-potes";
+            pname = "wjtp";
+            version = "0.1.0";
+            src = pkgs.fetchFromGitHub {
+              owner = "WartaPoirier-corp";
+              repo = "warta-juge-tes-potes";
+              rev = "94ce31f7493592459b5b05e3b6f1a759cf120771";
+              sha256 = "sha256-V3T2c+kuEyXILlAxLZ9da7TH+2UujOtYBs1CsoZcWng=";
+            };
+            cargoSha256 = "sha256-AAssvQd1OMiAnF7RsqMG2GKKHQ0SfXYgvdHU/yRFTms=";
+            postInstall = ''
+              cp -r $src/static/ $out/
+              cp questions.ron $out/
+            '';
+            meta = with pkgs.lib; {
+              description = "Fun online game";
+              homepage = "https://github.com/WartaPoirier-corp/warta-juge-tes-potes/";
+              license = licenses.agpl3;
+            };
+          };
         };
 
         defaultPackage = self.packages.${system}.wartid-server;
@@ -113,9 +136,22 @@
           let
             cfg = config.services.wartid;
             puretaiCfg = config.services.wartapuretai;
+            wjtpCfg = config.services.wjtp;
           in
           with lib;
           {
+            options.services.wjtp = {
+              enable = mkEnableOption "WartaJugeTesPotes";
+              domain = mkOption {
+                type = types.str;
+                description = "The domain name on which the app is hosted";
+              };
+              enableNginx = mkOption {
+                type = types.bool;
+                default = true;
+                description = "Wheter or not to add a nginx config for WartaJugeTesPotes";
+              };
+            };
             options.services.wartapuretai = {
               enable = mkEnableOption "WartaPuretai";
               domain = mkOption {
@@ -254,6 +290,34 @@
                 };
                 "/" = {
                   proxyPass = "http://localhost:8088";
+                };
+              };
+            };
+
+            config.systemd.services.wjtp = mkIf wjtpCfg.enable {
+              description = "WartaJugeTesPotes";
+              wantedBy = [ "multi-user.target" ];
+              after = [ "network.target" ];
+              environment = {
+                ROCKET_PORT = "8089";
+              };
+              serviceConfig = {
+                WorkingDirectory = "${self.packages.${pkgs.system}.wjtp}/";
+                ExecStart = "${self.packages.${pkgs.system}.wjtp}/bin/warta-juge-tes-potes";
+                Type = "simple";
+              };
+            };
+
+            config.services.nginx.virtualHosts."${wjtpCfg.domain}" = mkIf wjtpCfg.enableNginx {
+              enableACME = true;
+              forceSSL = true;
+              root = "${self.packages.${pkgs.system}.wjtp}";
+              locations = {
+                "/static/" = {
+                  alias = "${self.packages.${pkgs.system}.wjtp}/static/";
+                };
+                "/" = {
+                  proxyPass = "http://localhost:8089";
                 };
               };
             };
