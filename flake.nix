@@ -322,7 +322,7 @@
                 "/ws" = {
                   proxyPass = "http://localhost:8008";
                   proxyWebsockets = true;
-                }
+                };
               };
             };
           };
