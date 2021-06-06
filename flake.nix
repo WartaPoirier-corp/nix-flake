@@ -91,13 +91,14 @@
             src = pkgs.fetchFromGitHub {
               owner = "WartaPoirier-corp";
               repo = "warta-juge-tes-potes";
-              rev = "5d3a7f4d4132dff90a6b18a99ed528a65cdd1b1c";
-              sha256 = "sha256-wynxYQ70MEdM0FJsOo7Hz/qvRGxJ3h0yovVUaMCmfP0=";
+              rev = "ab6c3e7a6608352492e401a4e601f093ee3a3b8b";
+              sha256 = "sha256-l3G4ocuV6spU0NReZlhAzj2EXurrDoubZJpJYFnwi84=";
             };
-            cargoSha256 = "sha256-AAssvQd1OMiAnF7RsqMG2GKKHQ0SfXYgvdHU/yRFTms=";
+            cargoSha256 = "sha256-oC78EoVu9NvCJxIhqhTtEhXJJZ77Dt8O9zao39dsfKI=";
             postInstall = ''
               cp -r $src/static/ $out/
               cp questions.ron $out/
+              cp funny_words.txt $out/
             '';
             meta = with pkgs.lib; {
               description = "Fun online game";
