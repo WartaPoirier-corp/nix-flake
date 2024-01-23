@@ -172,7 +172,7 @@
             wjtpCfg = config.services.wjtp;
             mpt = config.services.milpertuis;
 
-            milpertuisDir = cfg: pkgs.mkDerivation {
+            milpertuisDir = cfg: lib.mkDerivation {
               # TODO: i'm sure there is a nix function to write to a file
               buildPhase = ''
                 mkdir projects
