@@ -165,14 +165,14 @@
           '';
         };
       }) // {
-        nixosModule = { config, pkgs, lib, ... }:
+        nixosModule = { config, pkgs, lib, stdenv, ... }:
           let
             cfg = config.services.wartid;
             puretaiCfg = config.services.wartapuretai;
             wjtpCfg = config.services.wjtp;
             mpt = config.services.milpertuis;
 
-            milpertuisDir = cfg: mkDerivation {
+            milpertuisDir = cfg: stdenv.mkDerivation {
               # TODO: i'm sure there is a nix function to write to a file
               buildPhase = ''
                 mkdir projects
