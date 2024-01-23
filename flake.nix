@@ -25,22 +25,6 @@
           url = "https://wp-corp.eu.org/milpertuis-0.1.0-beta1.tar.gz";
           sha256 = "0qpw9c7gc3dhd6zx01652qhhwscdscw9y57d6n2ybgv2hhcyq33z";
         };
-
-        milpertuisDir = cfg: pkgs.mkDerivation {
-          # TODO: i'm sure there is a nix function to write to a file
-          buildPhase = ''
-            mkdir projects
-            mkdir media
-            echo "base_url = 'https://${cfg.domain}'" >> config.toml
-            echo "database_url = '${cfg.databaseUrl}'" >> config.toml
-            echo "cookies_key = '${cfg.cookiesKey}'" >> config.toml
-            echo "listen_on = '127.0.0.1:3838'" >> config.toml
-            echo "[mail]" >> config.toml
-            echo "address = '${cfg.mailServer}'" >> config.toml
-            echo "username = '${cfg.mailUser}'" >> config.toml
-            echo "password = '${cfg.mailPassword}'" >> config.toml
-          '';
-        };
       in {
         packages = {
           milpertuis = pkgs.rustPlatform.buildRustPackage {
@@ -187,6 +171,22 @@
             puretaiCfg = config.services.wartapuretai;
             wjtpCfg = config.services.wjtp;
             mpt = config.services.milpertuis;
+
+            milpertuisDir = cfg: pkgs.mkDerivation {
+              # TODO: i'm sure there is a nix function to write to a file
+              buildPhase = ''
+                mkdir projects
+                mkdir media
+                echo "base_url = 'https://${cfg.domain}'" >> config.toml
+                echo "database_url = '${cfg.databaseUrl}'" >> config.toml
+                echo "cookies_key = '${cfg.cookiesKey}'" >> config.toml
+                echo "listen_on = '127.0.0.1:3838'" >> config.toml
+                echo "[mail]" >> config.toml
+                echo "address = '${cfg.mailServer}'" >> config.toml
+                echo "username = '${cfg.mailUser}'" >> config.toml
+                echo "password = '${cfg.mailPassword}'" >> config.toml
+              '';
+            };
           in
           with lib;
           {
