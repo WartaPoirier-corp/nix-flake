@@ -14,34 +14,10 @@
           inherit (fenix.packages.${system}.minimal) cargo rustc;
         };
       in {
-        packages = ({
-          # WartaJugeTesPotes
-          wjtp = rust.buildRustPackage {
-            crateName = "warta-juge-tes-potes";
-            pname = "wjtp";
-            version = "0.1.0";
-            src = pkgs.fetchFromGitHub {
-              owner = "WartaPoirier-corp";
-              repo = "warta-juge-tes-potes";
-              rev = "5eaed030a839011b85e273251edecaa693070432";
-              sha256 = "sha256-/tBGXAAKUhC5RhU4mFn+qiXOF0J1ml3ORLsCcfIZrbw=";
-            };
-            cargoSha256 = "sha256-oC78EoVu9NvCJxIhqhTtEhXJJZ77Dt8O9zao39dsfKI=";
-            postInstall = ''
-              cp -r $src/static/ $out/
-              cp questions.ron $out/
-              cp funny_words.txt $out/
-            '';
-            meta = with pkgs.lib; {
-              description = "Fun online game";
-              homepage = "https://github.com/WartaPoirier-corp/warta-juge-tes-potes/";
-              license = licenses.agpl3;
-            };
-          };
-        })
-        // (import ./packages/milpertuis.nix { inherit pkgs; })
-        // (import ./packages/wartid.nix { inherit pkgs rust; })
-        // (import ./packages/wartapuretai.nix { inherit pkgs rust; });
+        packages = (import ./packages/milpertuis.nix { inherit pkgs; }) //
+          (import ./packages/wartid.nix { inherit pkgs rust; }) //
+          (import ./packages/wartapuretai.nix { inherit pkgs rust; }) //
+          (import ./packages/wjtp.nix { inherit pkgs rust; });
 
         defaultPackage = self.packages.${system}.wartid-server;
         devShell = pkgs.mkShell {
@@ -69,58 +45,9 @@
         };
       }) // {
         nixosModule = { config, pkgs, lib, ... }:
-          let
-            wjtpCfg = config.services.wjtp;
-          in
-          with lib;
-          ({
-            options.services.wjtp = {
-              enable = mkEnableOption "WartaJugeTesPotes";
-              domain = mkOption {
-                type = types.str;
-                description = "The domain name on which the app is hosted";
-              };
-              enableNginx = mkOption {
-                type = types.bool;
-                default = true;
-                description = "Wheter or not to add a nginx config for WartaJugeTesPotes";
-              };
-            };
-            
-            config.systemd.services.wjtp = mkIf wjtpCfg.enable {
-              description = "WartaJugeTesPotes";
-              wantedBy = [ "multi-user.target" ];
-              after = [ "network.target" ];
-              environment = {
-                ROCKET_PORT = "8089";
-              };
-              serviceConfig = {
-                WorkingDirectory = "${self.packages.${pkgs.system}.wjtp}/";
-                ExecStart = "${self.packages.${pkgs.system}.wjtp}/bin/warta-juge-tes-potes";
-                Type = "simple";
-              };
-            };
-
-            config.services.nginx.virtualHosts."${wjtpCfg.domain}" = mkIf wjtpCfg.enableNginx {
-              enableACME = true;
-              forceSSL = true;
-              root = "${self.packages.${pkgs.system}.wjtp}";
-              locations = {
-                "/static/" = {
-                  alias = "${self.packages.${pkgs.system}.wjtp}/static/";
-                };
-                "/" = {
-                  proxyPass = "http://localhost:8089";
-                };
-                "/ws" = {
-                  proxyPass = "http://localhost:8008";
-                  proxyWebsockets = true;
-                };
-              };
-            };
-      })
-      // (import ./services/milpertuis.nix { inherit config pkgs lib; })
-      // (import ./services/wartid.nix { inherit config pkgs lib; })
-      // (import ./services/wartapuretai.nix { inherit config pkgs lib; });
+          (import ./services/milpertuis.nix { inherit config pkgs lib; }) //
+          (import ./services/wartid.nix { inherit config pkgs lib; }) // 
+          (import ./services/wartapuretai.nix { inherit config pkgs lib; }) //
+          (import ./services/wjtp.nix { inherit config pkgs lib; });
   };
 }
