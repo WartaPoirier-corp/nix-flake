@@ -2,8 +2,8 @@
 
 let
   milpertuisSrc = fetchTarball {
-    url = "https://wp-corp.eu.org/milpertuis-0.1.0-beta1.tar.gz";
-    sha256 = "0qpw9c7gc3dhd6zx01652qhhwscdscw9y57d6n2ybgv2hhcyq33z";
+    url = "https://wp-corp.eu.org/milpertuis-0.1.0-beta2.tar.gz";
+    sha256 = "0xy9d04iy8k0gj7ygq37jyzqhmpc992xpg7i1ngajc7i8hbmn2vh";
   };
 in {
   milpertuis = pkgs.rustPlatform.buildRustPackage {
