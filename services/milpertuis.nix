@@ -56,10 +56,12 @@ with lib;
     user = mkOption {
       type = types.str;
       description = "System user. If set to `milpertuis`, it will be created.";
+      default = "milpertuis";
     };
     group = mkOption {
       type = types.str;
       description = "System group. If set to `milpertuis`, it will be created.";
+      default = "milpertuis";
     };
   };
 
