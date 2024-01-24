@@ -1,6 +1,7 @@
 { config, pkgs, lib }:
+
 let
-  cfg = config.wartid;
+  cfg = config.services.wartid;
 in
 with lib;
 {

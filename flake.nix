@@ -15,30 +15,6 @@
         };
       in {
         packages = ({
-          # WartaPuretai
-          wartapuretai = rust.buildRustPackage {
-            crateName = "warta-quiz";
-            pname = "wartapuretai";
-            version = "0.1.1";
-            src = pkgs.fetchFromGitHub {
-              owner = "WartaPoirier-corp";
-              repo = "Wartapuretai";
-              rev = "3b630e792793b2116b9d1bc371cbfcce0e6bfc27";
-              sha256 = "sha256-LvBvTHezK7BHkyg479Ry+uZ+4PteTP1aAt7KFELCeb0=";
-            };
-            cargoSha256 = "sha256-4mfkm/HJPFi0flyfSf9qfyhqStVjaNGUBOp20piGeYA=";
-            postInstall = ''
-              cp -r $src/static/ $out/
-              cp -r $src/templates/ $out/
-              cp questions.json $out/
-            '';
-            meta = with pkgs.lib; {
-              description = "Purity test";
-              homepage = "https://github.com/WartaPoirier-corp/WartaPuretai/";
-              license = licenses.agpl3;
-            };
-          };
-          
           # WartaJugeTesPotes
           wjtp = rust.buildRustPackage {
             crateName = "warta-juge-tes-potes";
@@ -64,7 +40,8 @@
           };
         })
         // (import ./packages/milpertuis.nix { inherit pkgs; })
-        // (import ./packages/wartid.nix { inherit pkgs rust; });
+        // (import ./packages/wartid.nix { inherit pkgs rust; })
+        // (import ./packages/wartapuretai.nix { inherit pkgs rust; });
 
         defaultPackage = self.packages.${system}.wartid-server;
         devShell = pkgs.mkShell {
@@ -93,8 +70,6 @@
       }) // {
         nixosModule = { config, pkgs, lib, ... }:
           let
-            cfg = config.services.wartid;
-            puretaiCfg = config.services.wartapuretai;
             wjtpCfg = config.services.wjtp;
           in
           with lib;
@@ -111,47 +86,7 @@
                 description = "Wheter or not to add a nginx config for WartaJugeTesPotes";
               };
             };
-            options.services.wartapuretai = {
-              enable = mkEnableOption "WartaPuretai";
-              domain = mkOption {
-                type = types.str;
-                description = "The domain name on which the app is hosted";
-              };
-              enableNginx = mkOption {
-                type = types.bool;
-                default = true;
-                description = "Wheter or not to add a nginx config for WartaPuretai";
-              };
-            };
             
-            config.systemd.services.wartapuretai = mkIf puretaiCfg.enable {
-              description = "WartaPuretai";
-              wantedBy = [ "multi-user.target" ];
-              after = [ "network.target" ];
-              environment = {
-                ROCKET_PORT = "8088";
-              };
-              serviceConfig = {
-                WorkingDirectory = "${self.packages.${pkgs.system}.wartapuretai}/";
-                ExecStart = "${self.packages.${pkgs.system}.wartapuretai}/bin/warta-quiz";
-                Type = "simple";
-              };
-            };
-
-            config.services.nginx.virtualHosts."${puretaiCfg.domain}" = mkIf puretaiCfg.enableNginx {
-              enableACME = true;
-              forceSSL = true;
-              root = "${self.packages.${pkgs.system}.wartapuretai}";
-              locations = {
-                "/static/" = {
-                  alias = "${self.packages.${pkgs.system}.wartapuretai}/static/";
-                };
-                "/" = {
-                  proxyPass = "http://localhost:8088";
-                };
-              };
-            };
-
             config.systemd.services.wjtp = mkIf wjtpCfg.enable {
               description = "WartaJugeTesPotes";
               wantedBy = [ "multi-user.target" ];
@@ -185,6 +120,7 @@
             };
       })
       // (import ./services/milpertuis.nix { inherit config pkgs lib; })
-      // (import ./services/wartid.nix { inherit config pkgs lib; });
+      // (import ./services/wartid.nix { inherit config pkgs lib; })
+      // (import ./services/wartapuretai.nix { inherit config pkgs lib; });
   };
 }
