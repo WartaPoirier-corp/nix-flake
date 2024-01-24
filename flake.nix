@@ -20,39 +20,8 @@
           rev = wartid-rev;
           sha256 = "sha256-uUC3+EEf/wti18u8R4quSpnaFZSccW1NVqZbIJ4ePrM=";
         };
-
-        milpertuisSrc = fetchTarball {
-          url = "https://wp-corp.eu.org/milpertuis-0.1.0-beta1.tar.gz";
-          sha256 = "0qpw9c7gc3dhd6zx01652qhhwscdscw9y57d6n2ybgv2hhcyq33z";
-        };
       in {
-        packages = {
-          milpertuis = pkgs.rustPlatform.buildRustPackage {
-            pname = "milpertuis";
-            version = "0.1.0";
-            src = milpertuisSrc;
-            cargoSha256 = "sha256-zYaXl0XYT+0aVtFFOnRzyixwuI5AiKUHP86bMdgECJc=";
-	          doCheck = false;
-            meta = with pkgs.lib; {
-              description = "Pijul-based software forge";
-              homepage = "https://m.wp-corp.eu.org/";
-              license = licenses.agpl3; # actually: TBD
-            };
-    	    };
-
-          milpertuis-front = pkgs.buildNpmPackage {
-            pname = "milpertuis-front";
-            version = "0.1.0";
-            src = milpertuisSrc;
-            buildPhase = "npm exec parcel build assets/styles/style.scss";
-            npmDepsHash = "sha256-WUsK+90mTJG/p75mhbEf8pnAwZ2l9o1tHDvzjgVklok=";
-            meta = with pkgs.lib; {
-              description = "Pijul-based software forge - front-end";
-              homepage = "https://m.wp-corp.eu.org/";
-              license = licenses.agpl3; # actually: TBD
-            };
-          };
-
+        packages = ({
           # Discord bot
           wartid-server-discord-bot = rust.buildRustPackage {
             crateName = "wartid-server-discord-bot";
@@ -138,7 +107,7 @@
               license = licenses.agpl3;
             };
           };
-        };
+        }) // (import ./packages/milpertuis.nix { inherit pkgs; });
 
         defaultPackage = self.packages.${system}.wartid-server;
         devShell = pkgs.mkShell {
@@ -165,60 +134,14 @@
           '';
         };
       }) // {
-        nixosModule = { config, pkgs, lib, stdenv, ... }:
+        nixosModule = { config, pkgs, lib, ... }:
           let
             cfg = config.services.wartid;
             puretaiCfg = config.services.wartapuretai;
             wjtpCfg = config.services.wjtp;
-            mpt = config.services.milpertuis;
-
-            milpertuisDir = cfg: pkgs.writeText "config.toml"
-              ''
-                base_url = 'https://${cfg.domain}'
-                database_url = '${cfg.databaseUrl}'
-                cookies_key = '${cfg.cookiesKey}'
-                listen_on = '127.0.0.1:3838'
-
-                [mail]
-                address = '${cfg.mailServer}'
-                username = '${cfg.mailUser}'
-                password = '${cfg.mailPassword}'
-              '';
           in
           with lib;
-          {
-            options.services.milpertuis = {
-              enable = mkEnableOption "Milpertuis";
-              domain = mkOption {
-                type = types.str;
-                description = "The domain name";
-              };
-              enableNginx = mkOption {
-                type = types.bool;
-                default = true;
-                description = "Wheter or not to add a nginx config";
-              };
-              databaseUrl = mkOption {
-                type = types.str;
-                description = "PostgreSQL database URL";
-              };
-              cookiesKey = mkOption {
-                type = types.str;
-                description = "Key to encrypt secret cookies. Can be generated with `openssl rand -base64 32`";
-              };
-              mailUser = mkOption {
-                type = types.str;
-                description = "Mail user name";
-              };
-              mailPassword = mkOption {
-                type = types.str;
-                description = "Mail password";
-              };
-              mailServer = mkOption {
-                type = types.str;
-                description = "Mail server";
-              };
-            };
+          ({
             options.services.wjtp = {
               enable = mkEnableOption "WartaJugeTesPotes";
               domain = mkOption {
@@ -404,31 +327,6 @@
                 };
               };
             };
-
-            config.systemd.services.milpertuis = mkIf mpt.enable {
-              description = "Milpertuis";
-              wantedBy = [ "multi-user.target" ];
-              after = [ "network.target" ];
-              serviceConfig = {
-                WorkingDirectory = milpertuisDir mpt;
-                ExecStart = "${self.packages.${pkgs.system}.milpertuis}/bin/milpertuis";
-                Type = "simple";
-              };
-            };
-
-            config.services.nginx.virtualHosts."${mpt.domain}" = mkIf mpt.enableNginx {
-              enableACME = true;
-              forceSSL = true;
-              root = "${self.packages.${pkgs.system}.milpertuis}";
-              locations = {
-                "/static/" = {
-                  alias = "${self.packages.${pkgs.system}.milpertuis-front}/lib/node_modules/milpertuis/dist/";
-                };
-                "/" = {
-                  proxyPass = "http://localhost:3838";
-                };
-              };
-            };
-          };
-      };
+      }) // (import ./services/milpertuis.nix { inherit config pkgs lib; });
+  };
 }
