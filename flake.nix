@@ -22,9 +22,13 @@
     //
     {
       nixosModules.default = { config, pkgs, lib, ... }:
-        (import ./services/milpertuis.nix { inherit config pkgs lib; }) //
-        (import ./services/wartid.nix { inherit config pkgs lib; }) // 
-        (import ./services/wartapuretai.nix { inherit config pkgs lib; }) //
-        (import ./services/wjtp.nix { inherit config pkgs lib; });
+      {
+        imports = [
+          ./services/milpertuis.nix
+          ./services/wartid.nix 
+          ./services/wartapuretai.nix
+          ./services/wjtp.nix
+        ];
+      };
     };
 }
