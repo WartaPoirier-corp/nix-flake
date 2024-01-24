@@ -97,5 +97,5 @@ with lib;
     inherit (cfg) group;
   };
 
-  users.groups.${cfg.group}.members = lib.optional cfg.enableNginx config.services.nginx.user;
+  config.users.groups.${cfg.group}.members = lib.optional cfg.enableNginx config.services.nginx.user;
 }
