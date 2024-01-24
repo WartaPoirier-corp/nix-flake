@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, self, ... }:
 
 let
   cfg = config.services.milpertuis;
@@ -72,9 +72,9 @@ with lib;
     serviceConfig = {
       User = cfg.user;
       Group = cfg.group;
-      WorkingDirectory = pkgs.milpertuis;
+      WorkingDirectory = self.packages.${pkgs.system}.milpertuis;
       StateDirectory = "milpertuis";
-      ExecStart = "${pkgs.milpertuis}/bin/milpertuis ${configFile cfg}";
+      ExecStart = "${self.packages.${pkgs.system}.milpertuis}/bin/milpertuis ${configFile cfg}";
       Type = "simple";
     };
   };
@@ -82,10 +82,10 @@ with lib;
   config.services.nginx.virtualHosts."${cfg.domain}" = mkIf cfg.enableNginx {
     enableACME = true;
     forceSSL = true;
-    root = "${pkgs.milpertuis}";
+    root = "${self.packages.${pkgs.system}.milpertuis}";
     locations = {
       "/static/" = {
-        alias = "${pkgs.milpertuis-front}/lib/node_modules/milpertuis/dist/";
+        alias = "${self.packages.${pkgs.system}.milpertuis-front}/lib/node_modules/milpertuis/dist/";
       };
       "/" = {
         proxyPass = "http://localhost:3838";
@@ -95,7 +95,7 @@ with lib;
 
   config.users.users.milpertuis = lib.mkIf (cfg.user == "milpertuis") {
     isSystemUser = true;
-    home = pkgs.milpertuis;
+    home = self.packages.${pkgs.system}.milpertuis;
     inherit (cfg) group;
   };
 
