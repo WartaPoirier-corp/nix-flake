@@ -1,16 +1,17 @@
-{ pkgs }:
+{ pkgs, rust }:
 
 let
   milpertuisSrc = fetchTarball {
-    url = "https://wp-corp.eu.org/milpertuis-0.1.0-beta3.tar.gz";
-    sha256 = "1ib9wwf81ijgsc10cn5ml38zq925ah15zdpy611bw3mjx7xgdcyw";
+    url = "https://wp-corp.eu.org/milpertuis-0.1.0-beta5.tar.gz";
+    sha256 = "128whi9fg1v0bks840f9pajdr67a5sq6m14lb0zag6y5h0crkw82";
   };
 in {
-  milpertuis = pkgs.rustPlatform.buildRustPackage {
+  milpertuis = rust.buildRustPackage {
+    nativeBuildInputs = with pkgs; [ perl ];
     pname = "milpertuis";
-    version = "0.1.0-beta3";
+    version = "0.1.0-beta5";
     src = milpertuisSrc;
-    cargoSha256 = "sha256-6Lh/aP+ZlUyTVDGZ4WCLzilimFHHql8CcDjBtXu7n+0=";
+    cargoSha256 = "sha256-w5jbBSX3aEJ51nMXfAu+rILRNXXNpH1Mz2YsbnmRro8=";
     doCheck = false;
     meta = with pkgs.lib; {
       description = "Pijul-based software forge";
@@ -21,7 +22,7 @@ in {
 
   milpertuis-front = pkgs.buildNpmPackage {
     pname = "milpertuis-front";
-    version = "0.1.0";
+    version = "0.1.0-beta5";
     src = milpertuisSrc;
     buildPhase = "npm exec parcel build assets/styles/style.scss";
     npmDepsHash = "sha256-WUsK+90mTJG/p75mhbEf8pnAwZ2l9o1tHDvzjgVklok=";
