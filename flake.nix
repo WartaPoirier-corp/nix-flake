@@ -1,7 +1,7 @@
 {
   description = "WartID: the WartaPoirier authentication and authorization service";
 
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/23.11";
   inputs.flake-utils.url = "github:numtide/flake-utils";
   inputs.fenix.url = "github:figsoda/fenix";
   inputs.fenix.inputs.nixpkgs.follows = "nixpkgs";
