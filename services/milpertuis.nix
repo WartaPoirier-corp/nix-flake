@@ -75,9 +75,40 @@ with lib;
       WorkingDirectory = self.packages.${pkgs.system}.milpertuis;
       StateDirectory = "milpertuis";
       ExecStart = "${self.packages.${pkgs.system}.milpertuis}/bin/milpertuis ${configFile cfg}";
+      # This script is here and not in the milpertuis-shell service
+      # because the later needs to start fast and this script should normally
+      # ever run once
+      ExecStartPre = pkgs.writeShellScript "milpertuis-generate-ssh-private-key"
+        ''
+        ${pkgs.openssh}/bin/ssh-keygen -t ed25519 -f ssh_host_ed25519_key -N ""
+        '';
       Type = "simple";
     };
   };
+
+  # Template service, activated by socket (see the next section)
+  # See `man 5 systemd.socket` for more information
+  config.systemd.services.milpertuis-shell = mkIf cfg.enable {
+    description = "Milpertuis SSH shell";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "network.target" ];
+    serviceConfig = {
+      User = cfg.user;
+      Group = cfg.group;
+      WorkingDirectory = self.packages.${pkgs.system}.milpertuis;
+      StateDirectory = "milpertuis";
+      ExecStart = "${self.packages.${pkgs.system}.milpertuis}/bin/milpertuis-shell-standalone --database-url ${cfg.databaseUrl} --projects-dir /var/lib/milpertuis/projects --key-file /var/lib/milpertuis/ssh_host_ed25519_key";
+      Type = "simple";
+    };
+  };
+
+  config.systemd.sockets.milpertuis-shell = mkIf cfg.enable {
+    description = "Milpertuis SSH shell - activation socket";
+    wantedBy = [ "sockets.target" ];
+    listenStreams = [ "0.0.0.0:22" ]; # TODO: make it configurable?
+  };
+
+  config.networking.firewall.allowedTCPPorts = mkIf cfg.enable [ 22 ];
 
   config.services.nginx.virtualHosts."${cfg.domain}" = mkIf cfg.enableNginx {
     enableACME = true;
