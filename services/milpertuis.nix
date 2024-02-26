@@ -64,6 +64,9 @@ with lib;
       description = "System group. If set to `milpertuis`, it will be created.";
       default = "milpertuis";
     };
+    package = mkPackageOption self.packages.${pkgs.system} "Milpertuis" {
+      default = [ "milpertuis" ];
+    };
   };
 
   config.systemd.services.milpertuis = mkIf cfg.enable {
@@ -73,9 +76,9 @@ with lib;
     serviceConfig = {
       User = cfg.user;
       Group = cfg.group;
-      WorkingDirectory = self.packages.${pkgs.system}.milpertuis;
+      WorkingDirectory = cfg.package;
       StateDirectory = "milpertuis";
-      ExecStart = "${self.packages.${pkgs.system}.milpertuis}/bin/milpertuis ${configFile cfg}";
+      ExecStart = "${cfg.package}/bin/milpertuis ${configFile cfg}";
       # This script is here and not in the milpertuis-shell service
       # because the later needs to start fast and this script should normally
       # ever run once
@@ -99,9 +102,9 @@ with lib;
     serviceConfig = {
       User = cfg.user;
       Group = cfg.group;
-      WorkingDirectory = self.packages.${pkgs.system}.milpertuis;
+      WorkingDirectory = cfg.package;
       StateDirectory = "milpertuis";
-      ExecStart = "${self.packages.${pkgs.system}.milpertuis}/bin/milpertuis-shell-standalone --database-url ${cfg.databaseUrl} --projects-dir /var/lib/milpertuis/projects --key-file /var/lib/milpertuis/ssh_host_ed25519_key";
+      ExecStart = "${cfg.package}/bin/milpertuis-shell-standalone --database-url ${cfg.databaseUrl} --projects-dir /var/lib/milpertuis/projects --key-file /var/lib/milpertuis/ssh_host_ed25519_key";
       Type = "simple";
     };
   };
@@ -117,7 +120,7 @@ with lib;
   config.services.nginx.virtualHosts."${cfg.domain}" = mkIf cfg.enableNginx {
     enableACME = true;
     forceSSL = true;
-    root = "${self.packages.${pkgs.system}.milpertuis}";
+    root = "${cfg.package}";
     locations = {
       "/static/" = {
         alias = "${self.packages.${pkgs.system}.milpertuis-front}/lib/node_modules/milpertuis/dist/";
@@ -130,7 +133,7 @@ with lib;
 
   config.users.users.milpertuis = lib.mkIf (cfg.user == "milpertuis") {
     isSystemUser = true;
-    home = self.packages.${pkgs.system}.milpertuis;
+    home = cfg.package;
     inherit (cfg) group;
   };
 
