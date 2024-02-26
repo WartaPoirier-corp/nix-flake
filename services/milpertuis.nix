@@ -82,7 +82,9 @@ with lib;
       ExecStartPre = pkgs.writeShellScript "milpertuis-generate-ssh-private-key"
         ''
         cd $STATE_DIRECTORY
-        ${pkgs.openssh}/bin/ssh-keygen -t ed25519 -f ssh_host_ed25519_key -N ""
+        if [ ! -f ssh_host_ed25519_key ]; then
+          ${pkgs.openssh}/bin/ssh-keygen -t ed25519 -f ssh_host_ed25519_key -N ""
+        fi
         '';
       Type = "simple";
     };
