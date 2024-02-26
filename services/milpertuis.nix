@@ -5,6 +5,7 @@ let
   configFile = cfg: pkgs.writeText "config.toml"
     ''
       base_url = 'https://${cfg.domain}'
+      ssh_host = '${cfg.domain}'
       database_url = '${cfg.databaseUrl}'
       cookies_key = '${cfg.cookiesKey}'
       listen_on = '127.0.0.1:3838'
