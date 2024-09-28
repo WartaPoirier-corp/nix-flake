@@ -11,7 +11,7 @@ let
       listen_on = '127.0.0.1:3838'
       state_directory = '/var/lib/milpertuis'
 
-      [mail]
+      [mailer]
       address = '${cfg.mail.address}'
       username = '${cfg.mail.user}'
       password = '${cfg.mail.password}'
@@ -66,6 +66,9 @@ with lib;
     };
     package = mkPackageOption self.packages.${pkgs.system} "Milpertuis" {
       default = [ "milpertuis" ];
+    };
+    front-package = mkPackageOption self.packages.${pkgs.system} "Milpertuis" {
+      default = [ "milpertuis-front" ];
     };
   };
 
@@ -123,7 +126,7 @@ with lib;
     root = "${cfg.package}";
     locations = {
       "/static/" = {
-        alias = "${self.packages.${pkgs.system}.milpertuis-front}/lib/node_modules/milpertuis/dist/";
+        alias = "${cfg.front-package}/lib/node_modules/milpertuis/dist/";
       };
       "/" = {
         proxyPass = "http://localhost:3838";
