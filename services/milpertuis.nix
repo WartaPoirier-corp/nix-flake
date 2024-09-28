@@ -8,6 +8,7 @@ let
       ssh_host = '${cfg.domain}'
       database_url = '${cfg.databaseUrl}'
       cookies_key = '${cfg.cookiesKey}'
+      jwt_key = '${cfg.jwtKey}'
       listen_on = '127.0.0.1:3838'
       state_directory = '/var/lib/milpertuis'
 
@@ -39,6 +40,10 @@ with lib;
     cookiesKey = mkOption {
       type = types.str;
       description = "Key to encrypt secret cookies. Can be generated with `openssl rand -base64 32`";
+    };
+    jwtKey = mkOption {
+      type = types.str;
+      description = "Key to encrypt JSON Web tokens. Can be generated with `openssl rand -base64 32`";
     };
     mail = {
       user = mkOption {
